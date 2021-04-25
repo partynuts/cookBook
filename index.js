@@ -1,9 +1,10 @@
-const App = require('./src/app');
-const Umzug = require('umzug');
-const umzug = new Umzug({ /* ... options ... */ });
+const express = require("express");
+const app = express();
+const bodyParser = require('body-parser');
+const port = process.env.PORT || 5000;
 const models = require('./src/models');
 
-(async () => {
-  const app = await App();
-  await models.sync();
-})();
+app.use(bodyParser.json());
+app.listen(port, () => console.log(`cook book app listening on port ${port}`));
+
+// console.log(models.Category.getAllCategories().then(res => console.log(res)));
