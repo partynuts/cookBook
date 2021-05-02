@@ -8,7 +8,7 @@ const config = {
 };
 
 beforeAll(() => {
-  pgtools.createdb(config, 'cookBook-test-db', function (err, res) {
+  const client = pgtools.createdb(config, 'cookBook-test-db', function (err, res) {
     if (err) {
       console.error(err);
       process.exit(-1);
@@ -23,8 +23,8 @@ beforeAll(() => {
     //   console.log(res);
     // });
   });
+ require('./../../src/models/category-model')(client);
 });
-const Category = require('./../../src/models/category-model')();
 
 describe('category model', () => {
   describe('createCategory', () => {
