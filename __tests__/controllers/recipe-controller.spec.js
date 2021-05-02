@@ -4,7 +4,7 @@ const Category = require('./../../src/models/category-model');
 const app = require('./../../index');
 
 describe('recipe controller', () => {
-  describe('POST api/recipes', async () => {
+  describe('POST api/recipes', () => {
     it('should create new recipe in db and return 201', async () => {
       const category = Category.createCategory('Salate');
 
