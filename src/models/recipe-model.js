@@ -67,7 +67,7 @@ module.exports = (client) => {
                   Select *
                   FROM recipes
                   WHERE title ILIKE '%$1%'
-                     OR descriptio ILIKE '%$1%'
+                     OR description ILIKE '%$1%'
         `, [buzzWord]
       )
         .then(res => res.rows)
