@@ -29,6 +29,16 @@ module.exports = (client) => {
         .then(res => res.rows[0]);
     },
 
+    getCategoryByTitle(categoryTitle) {
+      return client.query(`
+          SELECT *
+          FROM categories
+          WHERE categoryTitle = $1
+      `, [categoryTitle]
+      )
+        .then(res => res.rows[0])
+    },
+
     updateCategory(categoryId, categoryTitle, categoryDescription) {
       return client.query(`
                   UPDATE categories
