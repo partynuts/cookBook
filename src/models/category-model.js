@@ -31,10 +31,10 @@ module.exports = (client) => {
 
     getCategoryByTitle(categoryTitle) {
       return client.query(`
-          SELECT *
-          FROM categories
-          WHERE categoryTitle = $1
-      `, [categoryTitle]
+                  SELECT *
+                  FROM categories
+                  WHERE Lower(categoryTitle) = Lower($1)
+        `, [categoryTitle]
       )
         .then(res => res.rows[0])
     },
@@ -58,7 +58,17 @@ module.exports = (client) => {
                   WHERE id = $1
         `, [categoryId]
       )
-        .then(res => res)
+        .then(res => res[0])
+    },
+
+    deleteCategoryByTitle(categoryTitle) {
+      return client.query(`
+                  DELETE
+                  FROM categories
+                  WHERE categoryTitle = $1
+        `, [categoryTitle]
+      )
+        .then(res => res[0])
     }
   }
 };
