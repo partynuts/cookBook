@@ -2,7 +2,7 @@
   "name": "cookBook",
   "version": "1.0.0",
   "description": "API for cook book app",
-  "main": "index.js",
+  "main": "server.js",
   "repository": "git@github.com:partynuts/cookBook.git",
   "author": "proghany <proghany@ebay.com>",
   "license": "UNLICENSED",
