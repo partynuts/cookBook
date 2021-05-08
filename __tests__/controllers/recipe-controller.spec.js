@@ -1,7 +1,7 @@
 const request = require('supertest');
 const Recipe = require('./../../src/models/recipe-model');
 const Category = require('./../../src/models/category-model');
-const app = require('./../../index');
+const app = require('../../server');
 
 describe('recipe controller', () => {
   describe('POST api/recipes', () => {
@@ -113,7 +113,7 @@ describe('recipe controller', () => {
         .expect(404)
     });
   });
-  describe('GET /api/recipes/:categoryId', () => {
+  describe('GET /api/recipes/category/:categoryId', () => {
     it('should return 200 and all recipes of a certain category', async () => {
       const category1 = Category.createCategory('Salate');
 
@@ -132,7 +132,7 @@ describe('recipe controller', () => {
       );
 
       await request(app)
-        .get(`/api/recipes/${category1.id}`)
+        .get(`/api/recipes/category/${category1.id}`)
         .expect(200, [recipe1, recipe2]);
 
       const recipesByCategory = Recipe.getAllRecipesOfOneCategory(category1.id);
@@ -143,7 +143,7 @@ describe('recipe controller', () => {
       const category1 = Category.createCategory('Salate');
 
       await request(app)
-        .get(`/api/recipes/${category1.id}`)
+        .get(`/api/recipes/category/${category1.id}`)
         .expect(200, [])
         .then(res => {
           expect(res.body.message).toEqual('Es sind noch keine Rezepte für diese Kategorie hinterlegt')
@@ -224,7 +224,7 @@ describe('recipe controller', () => {
     });
   });
   describe('DELETE /api/recipes/:id', () => {
-    it('should delete the respective recipe and return 204', async () => {
+    it('should delete the respective recipe and return 200 and success msg', async () => {
       const category1 = Category.createCategory('Salate');
 
       const recipe1 = Recipe.createRecipe('Quinoa Salat',
@@ -236,7 +236,10 @@ describe('recipe controller', () => {
 
       await request(app)
         .delete(`/api/recipes/${recipe1.id}`)
-        .expect(204)
+        .expect(200)
+        .then(res => {
+          expect(res.body.successMsg).toEqual('Rezept wurde erfolgreich gelöscht.')
+        });
     });
     it('should return 404 if recipe does not exist', async () => {
       await request(app)

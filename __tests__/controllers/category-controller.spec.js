@@ -1,6 +1,49 @@
 const request = require('supertest');
-const Category = require('./../../src/models/category-model');
-const app = require('./../../index');
+// const Category = require('./../../src/models/category-model');
+const app = require('../../server');
+const pgtools = require('pgtools');
+const { Client } = require('pg');
+const secrets = require('../../secrets');
+const fs = require('fs').promises;
+const config = {
+  user: secrets.USER,
+  password: secrets.PW,
+  port: 5432,
+  host: 'localhost'
+};
+let client;
+let Category;
+
+beforeAll(async (done) => {
+  const dbRes = await pgtools.createdb(config, 'cookBook-test-db');
+  client = new Client({
+    user: secrets.USER,
+    password: secrets.PW,
+    database: 'cookBook-test-db'
+  });
+  await client.connect();
+  done();
+});
+
+afterAll(async (done) => {
+  await client.end();
+  const dbRes = await pgtools.dropdb(config, 'cookBook-test-db');
+  done();
+});
+
+beforeEach(async () => {
+  try {
+    const tableQuery = await fs.readFile(__dirname + '/../../schema/01_category.sql');
+    const createdTable = await client.query(tableQuery.toString());
+  } catch (e) {
+    console.log("error", e)
+  }
+  Category = require('./../../src/models/category-model')(client);
+});
+
+afterEach(async () => {
+  const droppedTable = await client.query(`DROP TABLE categories`)
+});
 
 describe('category controller', () => {
   describe('POST /api/categories', () => {
@@ -68,6 +111,9 @@ describe('category controller', () => {
       await request(app)
         .get(`/api/categories/6`)
         .expect(404)
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
     })
   });
   describe('PUT /api/categories/:categoryId', () => {
@@ -76,12 +122,23 @@ describe('category controller', () => {
 
       await request(app)
         .put(`/api/categories/${category.id}`)
-        .send({categoryTitle: 'Alkoholfreie Getränke', categoryDescription: 'Cocktails und Co. ohne Alkohol'})
+        .send({ categoryTitle: 'Alkoholfreie Getränke', categoryDescription: 'Cocktails und Co. ohne Alkohol' })
         .expect(200, [category])
 
       const updatedCategory = await Category.getCategoryById(category.id);
 
-      expect(updatedCategory).toEqual({categoryTitle: 'Alkoholfreie Getränke', categoryDescription: 'Cocktails und Co. ohne Alkohol'})
+      expect(updatedCategory).toEqual({
+        categoryTitle: 'Alkoholfreie Getränke',
+        categoryDescription: 'Cocktails und Co. ohne Alkohol'
+      })
+    });
+    it('should return 404 if the category does not exist', async () => {
+      await request(app)
+        .put(`/api/categories/6`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
     });
     it('should return 400 if no body is provided', async () => {
       const category = await Category.createCategory('Alkoholfreie Drinks', 'Cocktails und Co. ohne Alkohol')
@@ -89,20 +146,28 @@ describe('category controller', () => {
       await request(app)
         .put(`/api/categories/${category.id}`)
         .expect(400)
-
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
     });
     it('should return 400 if the provided body is invalid', async () => {
       const category = await Category.createCategory('Alkoholfreie Drinks', 'Cocktails und Co. ohne Alkohol')
 
       await request(app)
         .put(`/api/categories/${category.id}`)
-        .send({categoryTitle: 999, categoryDescription: 'Cocktails und Co. ohne Alkohol'})
-        .expect(400);
+        .send({ categoryTitle: 999, categoryDescription: 'Cocktails und Co. ohne Alkohol' })
+        .expect(400)
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
 
       await request(app)
         .put(`/api/categories/${category.id}`)
-        .send({categoryTitle: 'name@mail.com', categoryDescription: 'Cocktails und Co. ohne Alkohol'})
+        .send({ categoryTitle: 'name@mail.com', categoryDescription: 'Cocktails und Co. ohne Alkohol' })
         .expect(400)
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
     });
   });
   describe('DELETE /api/categories/:categoryId', () => {
@@ -111,13 +176,16 @@ describe('category controller', () => {
 
       await request(app)
         .delete(`/api/categories/${category.id}`)
-        .expect(204);
+        .expect(204)
     });
     it('should return 404 if category does not exist', async () => {
 
       await request(app)
         .delete(`/api/categories/5`)
-        .expect(404);
+        .expect(404)
+        .then(res => {
+          expect(res.body.errorMsg).toEqual('Diese Kategorie gibt es nicht.')
+        });
     });
   });
 });

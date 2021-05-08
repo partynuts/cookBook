@@ -5,4 +5,3 @@ CREATE TABLE IF NOT EXISTS categories
     categoryDescription VARCHAR(250)
 );
 
--- INSERT into categories (categoryTitle, categoryDescription) Values ('Salate', 'Leckere Salate');
