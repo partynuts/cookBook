@@ -3,7 +3,7 @@ const { Client } = require('pg');
 const client = new Client({
   user: secrets.USER,
   password: secrets.PW,
-  database: secrets.DB
+  database: process.env.NODE_ENV === 'test' ? 'cookBook-test-db' : secrets.DB
 });
 client.connect();
 

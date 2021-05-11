@@ -6,7 +6,7 @@ const categoryController = require('./src/controllers/category-controller');
 const recipeController = require('./src/controllers/recipe-controller');
 
 
-  app.use(bodyParser.json());
+app.use(bodyParser.json());
 categoryController(app, dbClient.Category);
 recipeController(app, dbClient.Recipe);
 module.exports = app;

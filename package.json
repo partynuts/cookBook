@@ -8,7 +8,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "node index.js",
-    "test": "jest"
+    "test": "NODE_ENV=test jest"
   },
   "dependencies": {
     "@robotty/umzug-postgres-storage": "^3.0.4",

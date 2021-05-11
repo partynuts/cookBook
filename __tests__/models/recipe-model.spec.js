@@ -12,24 +12,33 @@ let client;
 let Recipe;
 let Category;
 
-beforeAll(async (done) => {
-  const dbRes = await pgtools.createdb(config, 'cookBook-test-db');
+// beforeAll(async (done) => {
+//   const dbRes = await pgtools.createdb(config, 'cookBook-test-db');
+//   client = new Client({
+//     user: secrets.USER,
+//     password: secrets.PW,
+//     database: 'cookBook-test-db'
+//   });
+//   await client.connect();
+//   done();
+// });
+//
+// afterAll(async (done) => {
+//   await client.end();
+//   const dbRes = await pgtools.dropdb(config, 'cookBook-test-db');
+//   done();
+// });
+
+
+
+describe('recipe model', () => {beforeEach(async () => {
   client = new Client({
     user: secrets.USER,
     password: secrets.PW,
     database: 'cookBook-test-db'
   });
   await client.connect();
-  done();
-});
 
-afterAll(async (done) => {
-  await client.end();
-  const dbRes = await pgtools.dropdb(config, 'cookBook-test-db');
-  done();
-});
-
-beforeEach(async () => {
   try {
     const tableQuery2 = await fs.readFile(__dirname + '/../../schema/01_category.sql');
     const createdTable2 = await client.query(tableQuery2.toString());
@@ -42,12 +51,13 @@ beforeEach(async () => {
   Category = require('./../../src/models/category-model')(client);
 });
 
-afterEach(async () => {
-  const droppedTable = await client.query(`DROP TABLE recipes`)
-  const droppedTable2 = await client.query(`DROP TABLE categories`)
-});
+  afterEach(async () => {
+    const droppedTable = await client.query(`DROP TABLE recipes`);
+    const droppedTable2 = await client.query(`DROP TABLE categories`);
+    await client.end();
 
-describe('recipe model', () => {
+  });
+
   describe('createRecipe', () => {
     it('should create a new recipe in the db table recipes', async () => {
       const category = await Category.createCategory('Salate', "Leckere Salate");

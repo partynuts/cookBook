@@ -11,38 +11,48 @@ const config = {
 let client;
 let Category;
 
-beforeAll(async (done) => {
-  const dbRes = await pgtools.createdb(config, 'cookBook-test-db');
-  client = new Client({
-    user: secrets.USER,
-    password: secrets.PW,
-    database: 'cookBook-test-db'
-  });
-  await client.connect();
-  done();
-});
+// beforeAll(async (done) => {
+//   const dbRes = await pgtools.createdb(config, 'cookBook-test-db');
+//   client = new Client({
+//     user: secrets.USER,
+//     password: secrets.PW,
+//     database: 'cookBook-test-db'
+//   });
+//   await client.connect();
+//   done();
+// });
+//
+// afterAll(async (done) => {
+//   await client.end();
+//   const dbRes = await pgtools.dropdb(config, 'cookBook-test-db');
+//   done();
+// });
 
-afterAll(async (done) => {
-  await client.end();
-  const dbRes = await pgtools.dropdb(config, 'cookBook-test-db');
-  done();
-});
 
-beforeEach(async () => {
-  try {
-    const tableQuery = await fs.readFile(__dirname + '/../../schema/01_category.sql');
-    const createdTable = await client.query(tableQuery.toString());
-  } catch (e) {
-    console.log("error", e)
-  }
-  Category = require('./../../src/models/category-model')(client);
-});
-
-afterEach(async () => {
-  const droppedTable = await client.query(`DROP TABLE categories`)
-});
 
 describe('category model', () => {
+  beforeEach(async () => {
+    client = new Client({
+      user: secrets.USER,
+      password: secrets.PW,
+      database: 'cookBook-test-db'
+    });
+    await client.connect();
+
+    try {
+      const tableQuery = await fs.readFile(__dirname + '/../../schema/01_category.sql');
+      const createdTable = await client.query(tableQuery.toString());
+    } catch (e) {
+      console.log("error", e)
+    }
+    Category = require('./../../src/models/category-model')(client);
+  });
+
+  afterEach(async () => {
+    const droppedTable = await client.query(`DROP TABLE categories`)
+    await client.end();
+  });
+
   describe('createCategory', () => {
     it('should create a new category in db table categories', async () => {
       const createdCategory = {
@@ -97,7 +107,11 @@ describe('category model', () => {
 
       const updatedCategory = await Category.updateCategory(category2.id, 'Cremige Suppen', 'Cremige Suppen');
 
-      expect(updatedCategory).toEqual({id: category2.id, categorytitle: 'Cremige Suppen', categorydescription: 'Cremige Suppen'});
+      expect(updatedCategory).toEqual({
+        id: category2.id,
+        categorytitle: 'Cremige Suppen',
+        categorydescription: 'Cremige Suppen'
+      });
       expect(updatedCategory.categorydescription).toEqual('Cremige Suppen')
     });
   });
@@ -110,7 +124,11 @@ describe('category model', () => {
       const remainingCategories = await Category.getAllCategories()
 
       expect(remainingCategories).toHaveLength(1)
-      expect(remainingCategories).toEqual([{id: category2.id, categorytitle: 'Suppen', categorydescription: 'Cremige Suppen'}]);
+      expect(remainingCategories).toEqual([{
+        id: category2.id,
+        categorytitle: 'Suppen',
+        categorydescription: 'Cremige Suppen'
+      }]);
     });
   });
 

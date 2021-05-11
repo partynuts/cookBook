@@ -1,9 +1,38 @@
 const request = require('supertest');
-const Recipe = require('./../../src/models/recipe-model');
-const Category = require('./../../src/models/category-model');
+// const Recipe = require('./../../src/models/recipe-model');
 const app = require('../../server');
+const secrets = require('../../secrets');
+const config = {
+  user: secrets.USER,
+  password: secrets.PW,
+  port: 5432,
+  host: 'localhost'
+};
+let client;
+let Recipe;
 
 describe('recipe controller', () => {
+  beforeEach(async () => {
+    client = new Client({
+      user: secrets.USER,
+      password: secrets.PW,
+      database: 'cookBook-test-db'
+    });
+    await client.connect();
+
+    try {
+      const tableQuery = await fs.readFile(__dirname + '/../../schema/01_category.sql');
+      const createdTable = await client.query(tableQuery.toString());
+    } catch (e) {
+      console.log("error", e)
+    }
+    Recipe = require('./../../src/models/recipe-model')(client);
+  });
+
+  afterEach(async () => {
+    const droppedTable = await client.query(`DROP TABLE categories`);
+    await client.end();
+  });
   describe('POST api/recipes', () => {
     it('should create new recipe in db and return 201', async () => {
       const category = Category.createCategory('Salate');

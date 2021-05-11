@@ -1,5 +1,5 @@
 // const categoryModel = require('./../../src/models/category-model');
-const controller = require('../../src/controllers/category-controller');
+const controller = require('../../src/routes/category-controller');
 const expectedCategoryJson = {
   "categoryDescription": "Leckere Salate",
   "categorytitle": "Salate",
