@@ -1,21 +1,21 @@
 module.exports = function recipeController(app, Recipe) {
   app.post('/api/recipes', async (req, res) => {
-    if (!req.body.recipeTitle || !req.body.recipeDescription || !req.body.ingredients || !req.body.categoryId) {
+    console.log("BODY", req.body)
+    if (!req.body.title || !req.body.description || !req.body.ingredients || !req.body.category) {
       return res.status(400).json({ errorMsg: 'Bitte füllen sie alle Felder aus.' })
     }
-    const newRecipe = await Recipe.createRecipe(req.body)
+    const newRecipe = await Recipe.createRecipe(req.body);
+    console.log("NEW", newRecipe)
     return res.status(201).json(newRecipe)
   });
 
   app.get('/api/recipes', async (req, res) => {
     if (req.query.search) {
-      console.log('QUERY SEARCH: ', req.query.search)
-      const foundRecipe = await Recipe.getRecipesByBuzzWords(req.query.search);
+      const searchParam = typeof req.query.search === 'string' ? [req.query.search] : req.query.search;
+      const foundRecipe = await Recipe.getRecipesByBuzzWords(searchParam);
       if (foundRecipe && foundRecipe.length > 0) {
-        console.log("FOUND!")
         return res.status(200).json(foundRecipe)
       }
-      console.log("NOT FOUND")
       const allRecipes = await Recipe.getAllRecipes();
 
       return res.status(200).json(allRecipes);
@@ -31,7 +31,7 @@ module.exports = function recipeController(app, Recipe) {
       if (!foundRecipe) {
         return res.status(404).json({ errorMsg: 'Wir haben leider nichts gefunden.' });
       }
-
+      console.log("FOUND", foundRecipe)
       return res.status(200).json(foundRecipe);
     } catch (e) {
       console.log("ERROR", e);
@@ -45,7 +45,7 @@ module.exports = function recipeController(app, Recipe) {
       console.log('FOUND', foundRecipes, req.params.categoryId);
 
       if (!foundRecipes || foundRecipes.length <= 0) {
-        return res.status(200).json({ msg: 'Es gibt noch keine Rezepte in dieser Kategorie.' })
+        return res.status(404).json({ msg: 'Es gibt noch keine Rezepte in dieser Kategorie.' })
       }
 
       return res.status(200).json(foundRecipes);
@@ -56,18 +56,20 @@ module.exports = function recipeController(app, Recipe) {
   });
 
   app.put('/api/recipes/:id', async (req, res) => {
-    const { ingredients, recipeTitle, recipeDescription, categoryId } = req.body;
+    const { ingredients, title, description, category } = req.body;
     try {
       const foundRecipe = await Recipe.getRecipeById(req.params.id);
       if (!foundRecipe) {
         return res.status(404).json({ errorMsg: 'Wir haben leider nichts gefunden.' });
       }
-      if (!req.body || !Array.isArray(ingredients) || typeof recipeTitle !== 'string' || typeof recipeDescription !== 'string' || typeof categoryId !== 'string') {
+      console.log("UPDATE", !req.body, !Array.isArray(ingredients), typeof recipeTitle !== 'string', typeof recipeDescription !== 'string', typeof categoryId !== 'string')
+      console.log("BODY", req.body.category)
+      if (!req.body || !Array.isArray(ingredients) || typeof title !== 'string' || typeof description !== 'string' || typeof category !== 'string') {
 
         return res.status(400).json({ errorMsg: 'Bitte geben sie einen gültigen Titel, Beschreibung, Zutaten und Kategorie an.' })
       }
       const updatedRecipe = await Recipe.updateRecipe(req.params.id, req.body);
-
+      console.log("UPDATED ", updatedRecipe)
       return res.status(200).json(updatedRecipe);
     } catch (e) {
       console.log('ERROR', e);

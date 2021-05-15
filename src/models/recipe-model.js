@@ -1,12 +1,13 @@
 module.exports = (client) => {
 
   return {
-    createRecipe({ recipeTitle, recipeDescription, ingredients, duration, categoryId }) {
+    createRecipe({ title, description, ingredients, duration, category }) {
+      console.log("MODEL", title, description, ingredients, duration, category)
       return client.query(`
                   INSERT into recipes (title, description, ingredients, duration, category)
                   VALUES ($1, $2, $3, $4, $5)
                   RETURNING *
-        `, [recipeTitle, recipeDescription, ingredients, duration, categoryId]
+        `, [title, description, ingredients, duration, category]
       )
         .then(res => res.rows[0])
     },
@@ -38,7 +39,8 @@ module.exports = (client) => {
         .then(res => res.rows)
     },
 
-    updateRecipe(recipeId, { recipeTitle, recipeDescription, ingredients, duration, categoryId }) {
+    updateRecipe(recipeId, { title, description, ingredients, duration, category }) {
+      console.log("UPDATING IN MODEL", recipeId, title, description, ingredients, duration, category)
       return client.query(`
                   UPDATE recipes
                   SET title       = $1,
@@ -48,7 +50,7 @@ module.exports = (client) => {
                       category    = $5
                   WHERE id = $6
                   Returning *
-        `, [recipeTitle, recipeDescription, ingredients, duration, categoryId, recipeId]
+        `, [title, description, ingredients, duration, category, recipeId]
       )
         .then(res => res.rows[0])
     },
@@ -76,7 +78,6 @@ module.exports = (client) => {
             .then(res => res.rows)
         )
       )
-      console.log("RECIPES: ", recipes.flat(2));
       return recipes.flat(2)
     }
   }

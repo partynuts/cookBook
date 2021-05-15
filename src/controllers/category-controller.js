@@ -1,12 +1,10 @@
 module.exports = function categoryController(app, Category) {
   app.post('/api/categories', async (req, res) => {
     const foundCategory = await Category.getCategoryByTitle(req.body.categoryTitle);
-    console.log("FOUND CAT", foundCategory);
     if (foundCategory) {
       return res.status(400).json({ errorMsg: 'Diese Kategorie gibt es bereits.' });
     }
     const newCategory = await Category.createCategory(req.body.categoryTitle, req.body.categoryDescription);
-    console.log("NEW CAT", newCategory)
     return res.status(201).json(newCategory);
   });
 
@@ -18,12 +16,12 @@ module.exports = function categoryController(app, Category) {
       }
       const allCategories = await Category.getAllCategories();
 
-      return res.status(200).json(allCategories)
+      return res.status(200).json(allCategories);
     }
 
     const allCategories = await Category.getAllCategories();
 
-    return res.status(200).json(allCategories)
+    return res.status(200).json(allCategories);
   });
 
   app.get('/api/categories/:categoryId', async (req, res) => {
@@ -40,7 +38,6 @@ module.exports = function categoryController(app, Category) {
   });
 
   app.put('/api/categories/:categoryId', async (req, res) => {
-    console.log("BODY", req.body)
     const foundCategory = await Category.getCategoryById(req.params.categoryId);
     if (!foundCategory) {
       return res.status(404).json({ errorMsg: 'Diese Kategorie gibt es nicht.' })
